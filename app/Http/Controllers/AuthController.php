@@ -9,12 +9,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 
+
 class AuthController extends Controller
 {
-    
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','register']]);
+        $this->middleware('ApiAuth', ['except' => ['login','register']]);
     }
 
     public function login(Request $request)
@@ -33,6 +33,7 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // create Admin with role_id "1"
         $user = Auth::user();
         return response()->json([
                 'status' => 'success',
@@ -56,12 +57,11 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => 1,
+
         ]);
-        Log::info("Befor this" );
 
         $token = Auth::login($user);
-        Log::info("log" , [$token]);
-
         return response()->json([
             'status' => 'success',
             'message' => 'User created successfully',
@@ -92,5 +92,43 @@ class AuthController extends Controller
                 'type' => 'bearer',
             ]
         ]);
+    }
+
+    public function registerMember(Request $request){
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:6',
+        ]);
+        Log::info("findone", [$request->emai]);
+        
+        // verification if email deja existe 
+        if(User::where('email','=',$request->email)->first()){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Eamil deja utilisé',
+            ], 401);
+        }
+          // create Member with role_id "2" 
+        if(Auth::user()->role_id == 1){
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role_id' => 2,
+    
+            ]);
+    
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User Member successfully',
+                'user' => $user,
+            ]);
+        }else{
+            return response()->json([
+                'status' => 'error',
+                'message' => 'you are not admine to ths members',
+            ], 401);
+        }    
     }
 }
