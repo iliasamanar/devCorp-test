@@ -97,12 +97,19 @@ class AuthController extends Controller
     public function registerMember(Request $request){
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6',
         ]);
-
-        // create Member with role_id "2" 
-
+        Log::info("findone", [$request->emai]);
+        
+        // verification if email deja existe 
+        if(User::where('email','=',$request->email)->first()){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Eamil deja utilisé',
+            ], 401);
+        }
+          // create Member with role_id "2" 
         if(Auth::user()->role_id == 1){
             $user = User::create([
                 'name' => $request->name,
