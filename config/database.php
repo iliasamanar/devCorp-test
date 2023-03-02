@@ -66,11 +66,11 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', 'localhost'),
+            'host' => env('DB_HOST', 'db'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'devCorp-test'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', 'root'),
+            'password' => env('DB_PASSWORD', 'password'),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
