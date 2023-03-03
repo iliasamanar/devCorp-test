@@ -1,0 +1,103 @@
+version: '3'
+services:
+
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: php:latest
+    container_name: devcorp-test-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: devcorp-test-webserver
+    restart: unless-stopped
+    tty: true
+    environment:
+    - VIRTUAL_PORT=5004
+    - VIRTUAL_HOST=devcorp-test.test
+    ports:
+      - "5004:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+
+  #MySQL Service
+  # db:
+  #   image: mysql:5.7.22
+  #   container_name: devcorp-test-db
+  #   restart: unless-stopped
+  #   tty: true
+  #   ports:
+  #     - "3309:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 2#9@29qeQA@h
+  #     MYSQL_DATABASE: devcorp-test
+  #     MYSQL_USER: dpg23hc
+  #     MYSQL_PASSWORD: 2#9@29qeQA@h
+  #     SERVICE_TAGS: dev
+  #     SERVICE_NAME: mysql
+  #   volumes:
+  #     - dbdata:/var/lib/mysql/
+  #     - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+  #   networks:
+  #     - app-network
+  db:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment: 
+      POSTGRES_DB: blog
+      POSTGRES_USER: root 
+      POSTGRES_PASSWORD: password 
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   restart: unless-stopped
+  #   container_name: healthcheck-phpmyadmin
+  #   ports:
+  #     - 3334:80
+  #   links:
+  #     - db
+  #   environment:
+  #     PMA_HOST: db
+  #     UPLOAD_LIMIT: 102400K
+
+  #   networks:
+  #     - app-network
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgAdmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db 
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hanieasemi76@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password 
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+#Volumes
+volumes:
+  dbdata:
+    driver: local
